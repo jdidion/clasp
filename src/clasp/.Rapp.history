@@ -1,0 +1,1493 @@
+barplot(rbind(Deletions=losses, Amplifications=gains), xlab="Chromosome", ylab="Number of Events", legend=T)
+?barplot
+barplot(rbind(Deletions=losses, Amplifications=gains), xlab="Chromosome", ylab="Number of Events", args.legend=list(x="topleft"))
+barplot(rbind(Deletions=losses, Amplifications=gains), xlab="Chromosome", ylab="Number of Events", legend=T, args.legend=list(x="topleft"))
+barplot(rbind(Deletions=losses, Amplifications=gains), xlab="Chromosome", ylab="Number of Events", args.legend=list(x="topleft"))
+events <- lapply(c(muga.cn, mm.cn), function(x) list(loss=which(x$mean.cn < 1.25), gain=which(x$mean.cn > 2.75)))#
+losses <- table(unlist(lapply(events, function(x) x$loss)))#
+gains <- table(unlist(lapply(events, function(x) x$gain)))#
+barplot(rbind(Deletions=losses, Amplifications=gains), xlab="Chromosome", ylab="Number of Events", legend=T, args.legend=list(x="topleft"))
+losses
+barplot(rbind(Deletions=losses[as.character(1:19)], Amplifications=gains[as.character(1:19)]), xlab="Chromosome", ylab="Number of Events", legend=T, args.legend=list(x="topleft"))
+rbind(Deletions=losses[as.character(1:19)], Amplifications=gains[as.character(1:19)]
+)
+gains
+foo<-rbind(Deletions=losses[as.character(1:19)], Amplifications=gains[as.character(1:19)])
+foo[is.na(foo)]<-0
+colnames(foo)<-1:19
+barplot(foo, xlab="Chromosome", ylab="Number of Events", legend=T, args.legend=list(x="topleft"))
+events <- lapply(c(muga.cn, mm.cn), function(x) list(loss=which(x$mean.cn < 1.5), gain=which(x$mean.cn > 2.1)))#
+losses <- table(unlist(lapply(events, function(x) x$loss)))#
+gains <- table(unlist(lapply(events, function(x) x$gain)))#
+tab <- rbind(Deletions=losses[as.character(1:19)], Amplifications=gains[as.character(1:19)])#
+tab[is.na(tab)] <- 0#
+colnames(tab) <- 1:19#
+barplot(tab, xlab="Chromosome", ylab="Number of Events", legend=T, args.legend=list(x="topleft"))
+length(losses)
+sum(losses)
+sum(gains)
+mm.cn[[1]]$details
+names(mm.metrics)
+result$samples[mm]
+result$samples[mm,]
+copy.number.genoCN.plot(mm.metrics[["308"]], mm.cn[["308"]])
+names(mm.metrics)
+names(mm.cn)
+metrics.plot("308", mm.metrics[["308"]])
+head(mm.metrics[["308"]])
+metrics.plot <- function(name, markers, metrics, calls=NULL, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(markers$chrm, chromosomes))#
+        markers <- markers[w,]#
+        metrics <- metrics[w,]#
+        if (!is.null(calls)) {#
+            calls <- calls[w]#
+        }#
+    }#
+    chromosomes <- unique(markers$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(markers$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(markers$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(markers$chrm)] + markers$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, metrics$baf, calls, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(markers, metrics, calls, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}#
+#
+.plot.baf <- function(x, baf, calls, chrms, A.col=c("lightblue","darkblue"), B.col=c("pink", "red"),#
+        H.col=c("mediumpurple1", "purple4"), N.col=c("lightgray", "darkgray"), mid.col='black', ...) {#
+    plot(0:1, type="n", ylim=c(0, 1), xaxt="n", xlab="", ylab="B Allele Frequency", ...)#
+    segments(0, 0.5, max(x), 0.5, col=mid.col, lty=2)#
+#
+    odd <- as.integer(chrms) %% 2 == 1#
+    even <- as.integer(chrms) %% 2 == 0#
+#
+    col <- rep(N.col[1], length(x))#
+#
+    A <- calls == 1#
+    B <- calls == 2#
+    H <- calls == 3#
+#
+    col[even] <- N.col[2]#
+    col[odd & A] <- A.col[1]#
+    col[even & A] <- A.col[2]#
+    col[odd & H] <- H.col[1]#
+    col[even & H] <- H.col[2]#
+    col[odd & B] <- B.col[1]#
+    col[even & B] <- B.col[2]#
+#
+    segments(x[1], 0.5, x[length(x)], 0.5, lty=2)#
+    points(x, baf, col=col, pch=20)#
+}
+head(mm.array$marker.set$markers)
+get.genotypes <- function(markers, db, samples=NULL, as.matrix=TRUE) {#
+    tryCatch({#
+        dbBegin(db)#
+#
+        sql <- "SELECT Genotype.marker_id, Genotype.sample_id, call FROM Genotype"#
+        where <- NULL#
+        drop <- NULL#
+#
+        if (length(markers) > 1) {#
+            dbSendQuery(db, "CREATE TEMPORARY TABLE TempMarkers (id PRIMARY KEY)")#
+            dbSendPreparedQuery(db, "INSERT INTO TempMarkers VALUES (?)", data.frame(markers))#
+            sql <- paste(sql, "JOIN TempMarkers ON Genotype.marker_id = TempMarkers.id")#
+            drop <- c("DROP TABLE TempMarkers")#
+        }#
+        else if (!is.null(markers)) {#
+            sql <- paste(sql, "JOIN MarkerXMarkerSet ON Genotype.marker_id = MarkerXMarkerSet.marker_id")#
+            where <- c(where, paste("MarkerXMarkerSet.set_id =", markers))#
+        }#
+#
+        if (length(samples) > 1) {#
+            dbSendQuery(db, "CREATE TEMPORARY TABLE TempSamples (id PRIMARY KEY)")#
+            dbSendPreparedQuery(db, "INSERT INTO TempSamples VALUES (?)", data.frame(samples))#
+            sql <- paste(sql, "JOIN TempSamples ON Genotype.sample_id = TempSamples.id")#
+            drop <- c("DROP TABLE TempSamples")#
+        }#
+        else if (is.list(samples)) {#
+            where <- c(where, paste("Genotype.sample_id =", samples[[1]]))#
+        }#
+        else if (!is.null(samples)) {#
+            sql <- paste(sql, "JOIN SampleXSampleSet ON Genotype.sample_id = SampleXSampleSet.sample_id")#
+            where <- c(where, paste("SampleXSampleSet.set_id =", samples))#
+        }#
+#
+        if (!is.null(where)) {#
+            sql <- paste(sql, "WHERE", paste(where, collapse=" AND "))#
+        }#
+#
+        geno <- dbGetQuery(db, sql)#
+#
+        if (!is.null(drop)) {#
+            for (d in drop) {#
+                dbSendQuery(db, d)#
+            }#
+        }#
+    }, error=function(e) {#
+        stop(e)#
+    }, finally={#
+        dbRollback(db)#
+    })#
+    if (as.matrix) {#
+        geno <- .my.dcast(geno, marker_id~sample_id, value.var="call")#
+    }#
+    invisible(geno)#
+}
+mm.array$marker.set$set.id
+calls<-get.genotypes(1, db, list(308))
+length(calls)
+head(calls)
+metrics.plot <- function(sample.id, marker.set.id, metrics, db, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    calls <- dbGetQuery(db, wrap("select chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(sample.id))#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(calls$chrm, chromosomes))#
+        calls <- calls[w,]#
+        metrics <- metrics[w,]#
+    }#
+    chromosomes <- unique(calls$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(calls$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(calls$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(calls$chrm)] + calls$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, calls, metrics$baf, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(calls, metrics, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}#
+#
+.plot.baf <- function(x, calls, baf, chrms, A.col=c("lightblue","darkblue"), B.col=c("pink", "red"),#
+        H.col=c("mediumpurple1", "purple4"), N.col=c("lightgray", "darkgray"), mid.col='black', ...) {#
+    plot(0:1, type="n", ylim=c(0, 1), xaxt="n", xlab="", ylab="B Allele Frequency", ...)#
+    segments(0, 0.5, max(x), 0.5, col=mid.col, lty=2)#
+#
+    odd <- as.integer(chrms) %% 2 == 1#
+    even <- as.integer(chrms) %% 2 == 0#
+#
+    col <- rep(N.col[1], length(x))#
+#
+    A <- calls$call == 1#
+    B <- calls$call == 2#
+    H <- calls$call == 3#
+#
+    col[even] <- N.col[2]#
+    col[odd & A] <- A.col[1]#
+    col[even & A] <- A.col[2]#
+    col[odd & H] <- H.col[1]#
+    col[even & H] <- H.col[2]#
+    col[odd & B] <- B.col[1]#
+    col[even & B] <- B.col[2]#
+#
+    segments(x[1], 0.5, x[length(x)], 0.5, lty=2)#
+    points(x, baf, col=col, pch=20)#
+}
+metrics.plot("308", 1, mm.metrics[["308"]], db)
+metrics.plot <- function(sample.id, marker.set.id, metrics, db, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    calls <- dbGetPreparedQuery(db, wrap("select chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(sample.id))#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(calls$chrm, chromosomes))#
+        calls <- calls[w,]#
+        metrics <- metrics[w,]#
+    }#
+    chromosomes <- unique(calls$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(calls$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(calls$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(calls$chrm)] + calls$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, calls, metrics$baf, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(calls, metrics, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}
+metrics.plot("308", 1, mm.metrics[["308"]], db)
+metrics.plot <- function(sample.id, marker.set.id, metrics, db, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    calls <- dbGetPreparedQuery(db, .wrap("select chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(sample.id))#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(calls$chrm, chromosomes))#
+        calls <- calls[w,]#
+        metrics <- metrics[w,]#
+    }#
+    chromosomes <- unique(calls$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(calls$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(calls$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(calls$chrm)] + calls$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, calls, metrics$baf, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(calls, metrics, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}
+metrics.plot("308", 1, mm.metrics[["308"]], db)
+metrics.plot("308", 1, mm.metrics[["307"]], db)
+.plot.scatter.with.trend.and.outliers <- function(x, y, chrms, ylim, density.band.window,#
+        density.band.frac, plot.trend=!is.null(density.band.window),#
+        point.col=c("lightgray", "darkgray"), zero.col="black",#
+        trend.col="red", density.fill.col=rgb(1,0,0,0.33), ...) {#
+    odd <- as.integer(chrms) %% 2 == 0#
+    even <- as.integer(chrms) %% 2 == 1#
+#
+    outliers.low <- y < ylim[1]#
+    y[outliers.low] <- ylim[1]#
+    outliers.high <- y > ylim[2]#
+    y[outliers.high] <- ylim[2]#
+#
+    col <- rep(point.col[1], length(x))#
+    col[even] <- point.col[2]#
+    col[outliers.high | outliers.low] <- trend.col#
+#
+    plot(0:1, type="n", ylim=ylim, xaxt="n", ...)#
+    points(x, y, col=col, pch=20)#
+#
+    segments(0, 0, max(x), 0, col=zero.col, lty=2)#
+#
+    if (plot.trend) {#
+        # Plot "trend lines" for each chromosome. Currently using the supersmoother function,#
+        # but could also use a kernel smoother, regression, splines or loess. See:#
+        # http://statistics.berkeley.edu/classes/s133/Smooth-a.html#
+        # http://statistics.berkeley.edu/classes/s133/Smooth1a.html#
+        fits <- by(data.frame(x=x, y=y), chrms, function(m) supsmu(m$x, m$y))#
+        for (n in names(fits)) {#
+            lines(fits[[n]]$x, fits[[n]]$y, col=trend.col, lwd=2)#
+        }#
+    }#
+    if (!is.null(density.band.window)) {#
+        # Use a sliding window to determine the upper and lower bounds of y for density.band.frac SNPs#
+        bounds <- by(data.frame(x=x, y=y), chrms, function(m) {#
+            # Calculate the upper and lower quantiles for all windows#
+            rem <- (1 - density.band.frac) / 2#
+            if (nrow(m) <= density.band.window) {#
+                q <- quantile(m$y, c(rem, 1 - rem))#
+                m$low <- q[1]#
+                m$high <- q[2]#
+            }#
+            else {#
+                last.win <- nrow(m) - density.band.window + 1#
+                m$low <- NA#
+                m$high <- NA#
+                m[1:last.win, c("low", "high")] <- t(sapply(seq(1, last.win), function(start) {#
+                    end <- start + density.band.window - 1#
+                    print(any(!.is.num(rem)))#
+                    quantile(m$y[start:end], c(rem, 1 - rem))#
+                }))#
+                # Copy the value of the last window to cover the remaining x values#
+                m[(last.win + 1):nrow(m), c("low", "high")] <- m[last.win, c("low", "high")]#
+            }#
+            m#
+        }, simplify=FALSE)#
+#
+        # Draw filled band lines#
+        for (n in names(bounds)) {#
+            m <- bounds[[n]]#
+            lines(m$x, m$low, col=trend.col, lwd=0.5)#
+            lines(m$x, m$high, col=trend.col, lwd=0.5)#
+            polygon(c(m$x, rev(m$x)), c(m$low, rev(m$high)), border=NA, col=density.fill.col)#
+        }#
+    }#
+}
+metrics.plot("308", 1, mm.metrics[["307"]], db)
+.plot.scatter.with.trend.and.outliers <- function(x, y, chrms, ylim, density.band.window,#
+        density.band.frac, plot.trend=!is.null(density.band.window),#
+        point.col=c("lightgray", "darkgray"), zero.col="black",#
+        trend.col="red", density.fill.col=rgb(1,0,0,0.33), ...) {#
+    odd <- as.integer(chrms) %% 2 == 0#
+    even <- as.integer(chrms) %% 2 == 1#
+#
+    outliers.low <- y < ylim[1]#
+    y[outliers.low] <- ylim[1]#
+    outliers.high <- y > ylim[2]#
+    y[outliers.high] <- ylim[2]#
+#
+    col <- rep(point.col[1], length(x))#
+    col[even] <- point.col[2]#
+    col[outliers.high | outliers.low] <- trend.col#
+#
+    plot(0:1, type="n", ylim=ylim, xaxt="n", ...)#
+    points(x, y, col=col, pch=20)#
+#
+    segments(0, 0, max(x), 0, col=zero.col, lty=2)#
+#
+    if (plot.trend) {#
+        # Plot "trend lines" for each chromosome. Currently using the supersmoother function,#
+        # but could also use a kernel smoother, regression, splines or loess. See:#
+        # http://statistics.berkeley.edu/classes/s133/Smooth-a.html#
+        # http://statistics.berkeley.edu/classes/s133/Smooth1a.html#
+        fits <- by(data.frame(x=x, y=y), chrms, function(m) supsmu(m$x, m$y))#
+        for (n in names(fits)) {#
+            lines(fits[[n]]$x, fits[[n]]$y, col=trend.col, lwd=2)#
+        }#
+    }#
+    if (!is.null(density.band.window)) {#
+        # Use a sliding window to determine the upper and lower bounds of y for density.band.frac SNPs#
+        bounds <- by(data.frame(x=x, y=y), chrms, function(m) {#
+            # Calculate the upper and lower quantiles for all windows#
+            rem <- (1 - density.band.frac) / 2#
+            if (nrow(m) <= density.band.window) {#
+                q <- quantile(m$y, c(rem, 1 - rem))#
+                m$low <- q[1]#
+                m$high <- q[2]#
+            }#
+            else {#
+                last.win <- nrow(m) - density.band.window + 1#
+                m$low <- NA#
+                m$high <- NA#
+                m[1:last.win, c("low", "high")] <- t(sapply(seq(1, last.win), function(start) {#
+                    end <- start + density.band.window - 1#
+                    print(any(!is.num(m$y[start:end])))#
+                    quantile(m$y[start:end], c(rem, 1 - rem))#
+                }))#
+                # Copy the value of the last window to cover the remaining x values#
+                m[(last.win + 1):nrow(m), c("low", "high")] <- m[last.win, c("low", "high")]#
+            }#
+            m#
+        }, simplify=FALSE)#
+#
+        # Draw filled band lines#
+        for (n in names(bounds)) {#
+            m <- bounds[[n]]#
+            lines(m$x, m$low, col=trend.col, lwd=0.5)#
+            lines(m$x, m$high, col=trend.col, lwd=0.5)#
+            polygon(c(m$x, rev(m$x)), c(m$low, rev(m$high)), border=NA, col=density.fill.col)#
+        }#
+    }#
+}
+metrics.plot("308", 1, mm.metrics[["307"]], db)
+.plot.scatter.with.trend.and.outliers <- function(x, y, chrms, ylim, density.band.window,#
+        density.band.frac, plot.trend=!is.null(density.band.window),#
+        point.col=c("lightgray", "darkgray"), zero.col="black",#
+        trend.col="red", density.fill.col=rgb(1,0,0,0.33), ...) {#
+    odd <- as.integer(chrms) %% 2 == 0#
+    even <- as.integer(chrms) %% 2 == 1#
+#
+    outliers.low <- y < ylim[1]#
+    y[outliers.low] <- ylim[1]#
+    outliers.high <- y > ylim[2]#
+    y[outliers.high] <- ylim[2]#
+#
+    col <- rep(point.col[1], length(x))#
+    col[even] <- point.col[2]#
+    col[outliers.high | outliers.low] <- trend.col#
+#
+    plot(0:1, type="n", ylim=ylim, xaxt="n", ...)#
+    points(x, y, col=col, pch=20)#
+#
+    segments(0, 0, max(x), 0, col=zero.col, lty=2)#
+#
+    if (plot.trend) {#
+        # Plot "trend lines" for each chromosome. Currently using the supersmoother function,#
+        # but could also use a kernel smoother, regression, splines or loess. See:#
+        # http://statistics.berkeley.edu/classes/s133/Smooth-a.html#
+        # http://statistics.berkeley.edu/classes/s133/Smooth1a.html#
+        fits <- by(data.frame(x=x, y=y), chrms, function(m) supsmu(m$x, m$y))#
+        for (n in names(fits)) {#
+            lines(fits[[n]]$x, fits[[n]]$y, col=trend.col, lwd=2)#
+        }#
+    }#
+    if (!is.null(density.band.window)) {#
+        # Use a sliding window to determine the upper and lower bounds of y for density.band.frac SNPs#
+        bounds <- by(data.frame(x=x, y=y), chrms, function(m) {#
+            # Calculate the upper and lower quantiles for all windows#
+            rem <- (1 - density.band.frac) / 2#
+            if (nrow(m) <= density.band.window) {#
+                q <- quantile(m$y, c(rem, 1 - rem))#
+                m$low <- q[1]#
+                m$high <- q[2]#
+            }#
+            else {#
+                last.win <- nrow(m) - density.band.window + 1#
+                m$low <- NA#
+                m$high <- NA#
+                m[1:last.win, c("low", "high")] <- t(sapply(seq(1, last.win), function(start) {#
+                    end <- start + density.band.window - 1#
+                    print(any(!.is.num(m$y[start:end])))#
+                    quantile(m$y[start:end], c(rem, 1 - rem))#
+                }))#
+                # Copy the value of the last window to cover the remaining x values#
+                m[(last.win + 1):nrow(m), c("low", "high")] <- m[last.win, c("low", "high")]#
+            }#
+            m#
+        }, simplify=FALSE)#
+#
+        # Draw filled band lines#
+        for (n in names(bounds)) {#
+            m <- bounds[[n]]#
+            lines(m$x, m$low, col=trend.col, lwd=0.5)#
+            lines(m$x, m$high, col=trend.col, lwd=0.5)#
+            polygon(c(m$x, rev(m$x)), c(m$low, rev(m$high)), border=NA, col=density.fill.col)#
+        }#
+    }#
+}
+metrics.plot("308", 1, mm.metrics[["307"]], db)
+.plot.scatter.with.trend.and.outliers <- function(x, y, chrms, ylim, density.band.window,#
+        density.band.frac, plot.trend=!is.null(density.band.window),#
+        point.col=c("lightgray", "darkgray"), zero.col="black",#
+        trend.col="red", density.fill.col=rgb(1,0,0,0.33), ...) {#
+    odd <- as.integer(chrms) %% 2 == 0#
+    even <- as.integer(chrms) %% 2 == 1#
+#
+    outliers.low <- y < ylim[1]#
+    y[outliers.low] <- ylim[1]#
+    outliers.high <- y > ylim[2]#
+    y[outliers.high] <- ylim[2]#
+#
+    col <- rep(point.col[1], length(x))#
+    col[even] <- point.col[2]#
+    col[outliers.high | outliers.low] <- trend.col#
+#
+    plot(0:1, type="n", ylim=ylim, xaxt="n", ...)#
+    points(x, y, col=col, pch=20)#
+#
+    segments(0, 0, max(x), 0, col=zero.col, lty=2)#
+#
+    if (plot.trend) {#
+        # Plot "trend lines" for each chromosome. Currently using the supersmoother function,#
+        # but could also use a kernel smoother, regression, splines or loess. See:#
+        # http://statistics.berkeley.edu/classes/s133/Smooth-a.html#
+        # http://statistics.berkeley.edu/classes/s133/Smooth1a.html#
+        fits <- by(data.frame(x=x, y=y), chrms, function(m) supsmu(m$x, m$y))#
+        for (n in names(fits)) {#
+            lines(fits[[n]]$x, fits[[n]]$y, col=trend.col, lwd=2)#
+        }#
+    }#
+    if (!is.null(density.band.window)) {#
+        # Use a sliding window to determine the upper and lower bounds of y for density.band.frac SNPs#
+        bounds <- by(data.frame(x=x, y=y), chrms, function(m) {#
+            # Calculate the upper and lower quantiles for all windows#
+            rem <- (1 - density.band.frac) / 2#
+            if (nrow(m) <= density.band.window) {#
+                q <- quantile(m$y, c(rem, 1 - rem))#
+                m$low <- q[1]#
+                m$high <- q[2]#
+            }#
+            else {#
+                last.win <- nrow(m) - density.band.window + 1#
+                m$low <- NA#
+                m$high <- NA#
+                m[1:last.win, c("low", "high")] <- t(sapply(seq(1, last.win), function(start) {#
+                    end <- start + density.band.window - 1#
+                    quantile(m$y[start:end], c(rem, 1 - rem), na.rm=T)#
+                }))#
+                # Copy the value of the last window to cover the remaining x values#
+                m[(last.win + 1):nrow(m), c("low", "high")] <- m[last.win, c("low", "high")]#
+            }#
+            m#
+        }, simplify=FALSE)#
+#
+        # Draw filled band lines#
+        for (n in names(bounds)) {#
+            m <- bounds[[n]]#
+            lines(m$x, m$low, col=trend.col, lwd=0.5)#
+            lines(m$x, m$high, col=trend.col, lwd=0.5)#
+            polygon(c(m$x, rev(m$x)), c(m$low, rev(m$high)), border=NA, col=density.fill.col)#
+        }#
+    }#
+}
+metrics.plot("308", 1, mm.metrics[["307"]], db)
+warnings()
+names(mm.norm.params)
+head(mm.norm.params$switched)
+load("mm.norm.params.RData")
+metrics.plot <- function(sample.id, marker.set.id, metrics, norm.params, db, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(sample.id))#
+    if ("switched" %in% names(norm.params) && any(norm.params$switched)) {#
+        w <- as.character(calls$marker_id) %in% names(params$switched)[params$switched]#
+        A <- w & calls$call == 1#
+        B <- w & calls$call == 2#
+        calls[A, "call"] <- 2#
+        calls[B, "call"] <- 1#
+    }#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(calls$chrm, chromosomes))#
+        calls <- calls[w,]#
+        metrics <- metrics[w,]#
+    }#
+    chromosomes <- unique(calls$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(calls$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(calls$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(calls$chrm)] + calls$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, calls, metrics$baf, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(calls, metrics, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}#
+#
+.plot.baf <- function(x, calls, baf, chrms, A.col=c("lightblue","darkblue"), B.col=c("pink", "red"),#
+        H.col=c("mediumpurple1", "purple4"), N.col=c("lightgray", "darkgray"), mid.col='black', ...) {#
+    plot(0:1, type="n", ylim=c(0, 1), xaxt="n", xlab="", ylab="B Allele Frequency", ...)#
+    segments(0, 0.5, max(x), 0.5, col=mid.col, lty=2)#
+#
+    odd <- as.integer(chrms) %% 2 == 1#
+    even <- as.integer(chrms) %% 2 == 0#
+#
+    col <- rep(N.col[1], length(x))#
+#
+    A <- calls$call == 1#
+    B <- calls$call == 2#
+    H <- calls$call == 3#
+#
+    col[even] <- N.col[2]#
+    col[odd & A] <- A.col[1]#
+    col[even & A] <- A.col[2]#
+    col[odd & H] <- H.col[1]#
+    col[even & H] <- H.col[2]#
+    col[odd & B] <- B.col[1]#
+    col[even & B] <- B.col[2]#
+#
+    segments(x[1], 0.5, x[length(x)], 0.5, lty=2)#
+    points(x, baf, col=col, pch=20)#
+}
+metrics.plot("308", 1, mm.metrics[["307"]], mm.norm.params, db)
+calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(308))
+head(calls)
+norm.params<-mm.norm.params
+"switched" %in% names(norm.params) && any(norm.params$switched)
+w <- as.character(calls$marker_id) %in% names(params$switched)[params$switched]
+sum(w)
+w <- as.character(calls$marker_id) %in% names(norm.params$switched)[norm.params$switched]
+sum(w)
+metrics.plot <- function(sample.id, marker.set.id, metrics, norm.params, db, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(sample.id))#
+    if ("switched" %in% names(norm.params) && any(norm.params$switched)) {#
+        w <- as.character(calls$marker_id) %in% names(norm.params$switched)[norm.params$switched]#
+        A <- w & calls$call == 1#
+        B <- w & calls$call == 2#
+        calls[A, "call"] <- 2#
+        calls[B, "call"] <- 1#
+    }#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(calls$chrm, chromosomes))#
+        calls <- calls[w,]#
+        metrics <- metrics[w,]#
+    }#
+    chromosomes <- unique(calls$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(calls$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(calls$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(calls$chrm)] + calls$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, calls, metrics$baf, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(calls, metrics, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}
+calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(308))
+metrics.plot("308", 1, mm.metrics[["307"]], mm.norm.params, db)
+metrics.plot("308", 1, mm.metrics[["308"]], mm.norm.params, db)
+head(result$samples)
+head(result$samples,15)
+result$samples[grep("R1",result$samples$name),]
+intens<-dbGetQuery(db,"select marker_id,x,y from genotype where sample_id=308")
+intens<-dbGetQuery(db,"select marker_id,x,y from illumina where sample_id=308")
+head(intens)
+head(mm.norm.params$switched)
+m<-match(names(mm.norm.params$switched)[mm.no])
+m<-match(names(mm.norm.params$switched)[mm.norm.params$switched], intens$marker_id)
+head(m)
+temp<-intens[m,"X"]
+intens[m,"X"]<-intens[m,"Y"]
+intens[m,"Y"]<-temp
+head(mm.array$marker.set$markers, 20)
+head(intens)
+head(intens,20)
+head(intens)
+head(intens,20)
+head(mm.array$marker.set$markers, 20)
+devtools::check()
+setwd("~/sci/Rpackages/clasp/")
+devtools::check()
+setwd("~/clasp")
+load("mm.norm.params.RData")
+mm.metrics <- compute.metrics(mm.array$marker.set$set.id, mm.norm.params, db, #
+    cell.lines=result$samples[mm,"id"], platform="Illumina", normalize=TRUE)
+warnings()
+names(mm.metrics)
+head(mm.metrics[["308"]])
+metrics.plot(308, 1, mm.metrics[["308"]], mm.norm.params)
+metrics.plot(308, 1, mm.metrics[["308"]], mm.norm.params, db)
+mm.metrics <- compute.metrics(mm.array$marker.set$set.id, mm.norm.params, db, #
+    cell.lines=result$samples[mm,"id"], platform="Illumina", normalize=FALSE)
+metrics.plot(308, 1, mm.metrics[["308"]], mm.norm.params, db)
+metrics.plot(307, 1, mm.metrics[["307"]], mm.norm.params, db)
+names(mm.norm.params)
+foo<-mm.norm.params[-1]
+names(foo)
+metrics.plot(307, 1, mm.metrics[["307"]], foo, db)
+calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(308))
+head(calls)
+head(mm.metrics[["308"]])
+norm.params <- mm.norm.params
+if ("switched" %in% names(norm.params) && any(norm.params$switched)) {#
+        w <- as.character(calls$marker_id) %in% names(norm.params$switched)[norm.params$switched]#
+        A <- w & calls$call == 1#
+        B <- w & calls$call == 2#
+        calls[A, "call"] <- 2#
+        calls[B, "call"] <- 1#
+    }
+head(calls)
+head(mm.norm.params$switched)
+calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call, x, y from #
+        genotype join marker on genotype.marker_id = marker.id join illumina on illumina.marker_id = marker.id where genotype.sample_id = ? and illumina.sample_id = ?"),#
+        data.frame(308,308))
+calls <- dbGetPreparedQuery(db, .wrap("select marker.id, chromosome as chrm, position_bp as pos, call, x, y from #
+        genotype join marker on genotype.marker_id = marker.id join illumina on illumina.marker_id = marker.id where genotype.sample_id = ? and illumina.sample_id = ?"),#
+        data.frame(308,308))
+head(calls)
+head(result$sample)
+metrics.plot(307, 1, mm.metrics[["307"]], mm.norm.params, db)
+gt<-read.table(gzfile("MegaMUGA_genotypes.txt.gz"), sep="\t", header=T)
+head(gt)
+w<-grep("5033",gt$sample_name)
+load("~/mm.markers.RData")
+head(mm.markers)
+mm.markers$name[mm.markers$switched]
+head(mm.markers)
+foo<-gt[w,]
+dim(foo)
+head(foo)
+m<-match(mm.markers$name[mm.markers$switched], foo$sample_name)
+any(is.na(m))
+m<-m[!is.na(m)]
+head(m)
+m<-match(mm.markers$name[mm.markers$switched], foo$marker_name)
+any(is.na(m))
+temp<-foo[m,"X"]
+foo[m,"X"]<-foo[m,"Y"]
+foo[m,"Y"]<-temp
+gt[w,] <- foo
+head(gt[w,])
+m<-match(mm.markers$name, foo$marker_name)
+head(foo[m,])
+write.table(gt,"~/Desktop/MegaMUGA_genotypes.txt", sep="\t", row.names=F,col.names=T,quote=F)
+tab<-read.table("~/Desktop/data/cl/cl_MM_norm/MM5033.txt",header=T)
+tab<-read.table("~/Desktop/data/cl/cl_MM_norm/MM5033.txt",header=T,sep="\t")
+head(tab)
+head(mm.metrics[["308"]])
+head(mm.markers)
+tab<-read.table("~/Desktop/data/cl/cl_MM/MM5033.txt",sep="\t",header=T)
+head(tab)
+cl.data <- get.platform.data(1, "Illumina", db, result.samples[mm,"id"], as.matrix=TRUE, format=2)
+cl.data <- get.platform.data(1, "Illumina", db, result$samples[mm,"id"], as.matrix=TRUE, format=2)
+length(cl.data)
+colnames(cl.data[[1]])
+intens<-cbind(X=cl.data[[1]][,"308"], Y=cl.data[[2]][,"308"])
+head(intens)
+params<-mm.norm.params
+head(cl.data[[1]])
+rownames(intens) <- rownames()
+rownames(intens) <- rownames(cl.data[[1]])
+if ("switched" %in% names(params) && any(params$switched)) {#
+            n <- names(params$switched)[params$switched]#
+            m <- match(n, rownames(intens))#
+            temp <- intens[m, "X"]#
+            intens[m, "X"] <- intens[m, "Y"]#
+            intens[m, "Y"] <- temp#
+        }
+head(tab)
+head(intens)
+head(mm.markers)
+intens<-cbind(X=cl.data[[1]][,"308"], Y=cl.data[[2]][,"308"])
+head(intens)
+head(result$samples)
+head(result$samples,15)
+tab<-read.table("~/Desktop/data/cl/cl_MM/MM7308.txt",sep="\t",header=T)
+head(tab)
+intens<-cbind(X=cl.data[[1]][,"307"], Y=cl.data[[2]][,"307"])
+head(intens)
+rownames(intens)<-rownames(cl.data[[1]])
+if ("switched" %in% names(params) && any(params$switched)) {#
+            n <- names(params$switched)[params$switched]#
+            m <- match(n, rownames(intens))#
+            temp <- intens[m, "X"]#
+            intens[m, "X"] <- intens[m, "Y"]#
+            intens[m, "Y"] <- temp#
+        }
+head(intens)
+head(tab)
+dim(intens)
+dim(tab)
+dim(mm.markers)
+m<-match(mm.markers$mm.id,tab$reporterId)
+tab<-tab[m,]
+dim(tab)
+all(intens$X==tab$X)
+head(tab)
+head(intens$X)
+all(intens[,1]=tab[,1])
+all(intens[,1]==tab[,1])
+head(tab[intens[,1] != tab[,1],])
+all(intens[,1]==tab[,2])
+head(tab[intens[,1] != tab[,2],])
+head(intens[intens[,1] != tab[,2],])
+mm.markers[mm.markers$mm.id==297]
+mm.markers[mm.markers$mm.id==297,]
+sum(tab[intens[,1] != tab[,2])
+sum(intens[,1] != tab[,2])
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+intens<-as.data.frame(intens)
+head(intens)
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+.baf.lrr <- function(R, T, ref) {#
+    BAF <- T#
+    LRR <- R#
+    med.tAA <- median(ref$AA_T_Mean, na.rm=TRUE)#
+    med.tBB <- median(ref$BB_T_Mean, na.rm=TRUE)#
+    for (i in 1:length(T)) {#
+        if (!.is.num(T[i])) {#
+            BAF[i] <- NaN#
+            LRR[i] <- NaN#
+            next#
+        }#
+        th <- T[i]#
+        rr <- R[i]#
+        rAA <- ref$AA_R_Mean[i]#
+        rAB <- ref$AB_R_Mean[i]#
+        rBB <- ref$BB_R_Mean[i]#
+        tAA <- ref$AA_T_Mean[i]#
+        tAB <- ref$AB_T_Mean[i]#
+        tBB <- ref$BB_T_Mean[i]#
+#
+        e.tAA <- .is.num(tAA)#
+        e.tAB <- .is.num(tAB)#
+        e.tBB <- .is.num(tBB)#
+#
+        # 0: Test for inconsistencies between tAA/tAB/tBB and rAA/rAB/rBB#
+        if (((e.tAA & e.tAB) && tAA > tAB) ||#
+                ((e.tAA & e.tBB) && tAA > tBB) ||#
+                ((e.tAB & e.tBB) && tAB > tBB)) {#
+            BAF[i] <- LRR[i] <- NaN#
+        }#
+        # 1: Triple blank SNP#
+        else if (!(e.tAA|e.tAB|e.tBB)) {#
+            BAF[i] <- LRR[i] <- NaN#
+        }#
+        # 2: Blank for AB, AA, while positive for BB#
+        else if (!(e.tAA|e.tAB) & e.tBB) {#
+            if (th >= tBB) {#
+                BAF[i] <- 1#
+                LRR[i] <- ifelse(rBB <= 0, NaN, log2(rr / rBB))#
+            }#
+            else {#
+                BAF[i] <- LRR[i] <- NaN#
+            }#
+        }#
+        # 3: Blank for AB, BB, while positive for AA#
+        else if (e.tAA & !(e.tAB|e.tBB)) {#
+            if (th <= tAA) {#
+                BAF[i] <- 0#
+                LRR[i] <- ifelse(tAA <= 0, NaN, log2(rr / tAA))#
+            }#
+            else {#
+                BAF[i] <- LRR[i] <- NaN#
+            }#
+        }#
+        # 4: Blank for AB while positive for AA & BB#
+        else if (e.tAA & !e.tAB & e.tBB) {#
+            # no AB cluster exist for this SNP, while AA & BB exists. Set it to the closest of AA or BB#
+            min.index <- which.min(c(abs(tAA - th), abs(tBB - th)))#
+            if (min.index == 1 && th < tAA) {#
+                BAF[i] <- 0#
+                LRR[i] <- ifelse(tAA <= 0, NaN, log2(rr / tAA))#
+            }#
+            else if (min.index != 1 && th >= tBB) {#
+                BAF[i] <- 1#
+                LRR[i] <- ifelse(rBB <= 0, NaN, log2(rr / rBB))#
+            }#
+            else {#
+                BAF[i] <- LRR[i] <- NaN#
+            }#
+        }#
+        # 5: Blank for AA while positive for AB & BB#
+        else if (!e.tAA & e.tAB & e.tBB) {#
+            if (th >= tBB) {#
+                BAF[i] <- 1#
+            }#
+            # 5.1: SNP is "correctly between" ref$AB_T_Mean and ref$BB_T_Mean#
+            else if (th >= tAB) {#
+                # interpolate as SNP is expected to be between ref$AB_T_Mean and ref$BB_T_Mean#
+                BAF[i] <- 0.5 + 0.5 * (th - tAB) / (tBB - tAB)  #
+            }#
+            # 5.2: Heterozygous SNP is subjected to deletion or UPD of allele B making it unexectedly to be #
+            # between ref$AA_T_Mean and ref$AB_T_Mean where it normally should not NOT BE.#
+            else {#
+                BAF[i] <- ifelse(th < med.tAA, 0, 0.5 * (th - med.tAA) / (tAB - med.tAA))             #
+            }#
+            if (th > tAB) {#
+                eR <- rAB + ((th - tAB) * (rBB - rAB) / (tBB - tAB))#
+                w <- eR > 0#
+                any(is.nan(log2(rr[w] / eR[2])))#
+                LRR[i] <- ifelse(eR <= 0, NaN, log2(rr / eR))#
+            }#
+            else {#
+                LRR[i] <- NaN#
+            }#
+        }#
+        # 6: Blank for BB while positive for AA & AB#
+        else if (e.tAA & e.tAB & !e.tBB) {#
+            if (th < tAA) {#
+                BAF[i] <- 0#
+            }#
+            # 6.1: SNP is "correctly between" ref$AA_T_Mean and ref$AB_T_Mean#
+            else if (th <= tAB) {#
+                #interpolate as SNP is expected to be between ref$AB_T_Mean and ref$BB_T_Mean#
+                BAF[i] <- 0.5* (th - tAA) / (tAB - tAA)#
+            }#
+            # 2: Heterozygous SNP is subjected to deletion or UPD of allele A making it unexectedly to be #
+            # between ref$AB_T_Mean and ref$BB_T_Mean where it normally should not NOT BE.#
+            else {#
+                BAF[i] <- ifelse(th > med.tBB, 1, 0.5 + 0.5 * (th - tAB) / (med.tBB[i] - tAB))#
+            }#
+            if (th <= tAB) {#
+                eR <- rAA + ((th - tAA) * (rAB - rAA) / (tAB - tAA))#
+                LRR[i] <- ifelse(eR <= 0, NaN, log2(rr / eR))#
+            }#
+            else {#
+                LRR[i] <- NaN#
+            }#
+        }#
+        # 7: positive for AA & BB & AB, Illumina style calculation#
+        else if (e.tAA & e.tAB & e.tBB){#
+            if (th < tAB) {#
+                BAF[i] <- ifelse(th < tAA, 0, 0.5 * (th - tAA) / (tAB - tAA))#
+                eR <- rAA + ((th - tAA) * (rAB - rAA) / (tAB - tAA))#
+            }#
+            else {#
+                BAF[i] <- ifelse(th >= tBB, 1, 0.5 + 0.5 * (th - tAB) / (tBB - tAB))#
+                eR <- rAB + ((th - tAB) * (rBB - rAB) / (tBB - tAB))#
+            }#
+            LRR[i] <- ifelse(eR <= 0, NaN, log2(rr / eR))#
+        }#
+    }#
+    cbind(baf=.bound(BAF, 0, 1), lrr=LRR)#
+}
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+.baf.lrr <- function(R, T, ref) {#
+    BAF <- T#
+    LRR <- R#
+    med.tAA <- median(ref$AA_T_Mean, na.rm=TRUE)#
+    med.tBB <- median(ref$BB_T_Mean, na.rm=TRUE)#
+    for (i in 1:length(T)) {#
+        if (!.is.num(T[i])) {#
+            BAF[i] <- NaN#
+            LRR[i] <- NaN#
+            next#
+        }#
+        th <- T[i]#
+        rr <- R[i]#
+        rAA <- ref$AA_R_Mean[i]#
+        rAB <- ref$AB_R_Mean[i]#
+        rBB <- ref$BB_R_Mean[i]#
+        tAA <- ref$AA_T_Mean[i]#
+        tAB <- ref$AB_T_Mean[i]#
+        tBB <- ref$BB_T_Mean[i]#
+#
+        e.tAA <- .is.num(tAA)#
+        e.tAB <- .is.num(tAB)#
+        e.tBB <- .is.num(tBB)#
+#
+        # 0: Test for inconsistencies between tAA/tAB/tBB and rAA/rAB/rBB#
+        if (((e.tAA & e.tAB) && tAA > tAB) ||#
+                ((e.tAA & e.tBB) && tAA > tBB) ||#
+                ((e.tAB & e.tBB) && tAB > tBB)) {#
+            BAF[i] <- LRR[i] <- NaN#
+        }#
+        # 1: Triple blank SNP#
+        else if (!(e.tAA|e.tAB|e.tBB)) {#
+            BAF[i] <- LRR[i] <- NaN#
+        }#
+        # 2: Blank for AB, AA, while positive for BB#
+        else if (!(e.tAA|e.tAB) & e.tBB) {#
+            if (th >= tBB) {#
+                BAF[i] <- 1#
+                LRR[i] <- ifelse(rBB <= 0, NaN, log2(rr / rBB))#
+            }#
+            else {#
+                BAF[i] <- LRR[i] <- NaN#
+            }#
+        }#
+        # 3: Blank for AB, BB, while positive for AA#
+        else if (e.tAA & !(e.tAB|e.tBB)) {#
+            if (th <= tAA) {#
+                BAF[i] <- 0#
+                LRR[i] <- ifelse(tAA <= 0, NaN, log2(rr / tAA))#
+            }#
+            else {#
+                BAF[i] <- LRR[i] <- NaN#
+            }#
+        }#
+        # 4: Blank for AB while positive for AA & BB#
+        else if (e.tAA & !e.tAB & e.tBB) {#
+            # no AB cluster exist for this SNP, while AA & BB exists. Set it to the closest of AA or BB#
+            min.index <- which.min(c(abs(tAA - th), abs(tBB - th)))#
+            if (min.index == 1 && th < tAA) {#
+                BAF[i] <- 0#
+                LRR[i] <- ifelse(tAA <= 0, NaN, log2(rr / tAA))#
+            }#
+            else if (min.index != 1 && th >= tBB) {#
+                BAF[i] <- 1#
+                LRR[i] <- ifelse(rBB <= 0, NaN, log2(rr / rBB))#
+            }#
+            else {#
+                BAF[i] <- LRR[i] <- NaN#
+            }#
+        }#
+        # 5: Blank for AA while positive for AB & BB#
+        else if (!e.tAA & e.tAB & e.tBB) {#
+            if (th >= tBB) {#
+                BAF[i] <- 1#
+            }#
+            # 5.1: SNP is "correctly between" ref$AB_T_Mean and ref$BB_T_Mean#
+            else if (th >= tAB) {#
+                # interpolate as SNP is expected to be between ref$AB_T_Mean and ref$BB_T_Mean#
+                BAF[i] <- 0.5 + 0.5 * (th - tAB) / (tBB - tAB)  #
+            }#
+            # 5.2: Heterozygous SNP is subjected to deletion or UPD of allele B making it unexectedly to be #
+            # between ref$AA_T_Mean and ref$AB_T_Mean where it normally should not NOT BE.#
+            else {#
+                BAF[i] <- ifelse(th < med.tAA, 0, 0.5 * (th - med.tAA) / (tAB - med.tAA))             #
+            }#
+            if (th > tAB) {#
+                eR <- rAB + ((th - tAB) * (rBB - rAB) / (tBB - tAB))#
+                w <- eR > 0#
+                print(any(is.nan(log2(rr[w] / eR[2]))))#
+                LRR[i] <- ifelse(eR <= 0, NaN, log2(rr / eR))#
+            }#
+            else {#
+                LRR[i] <- NaN#
+            }#
+        }#
+        # 6: Blank for BB while positive for AA & AB#
+        else if (e.tAA & e.tAB & !e.tBB) {#
+            if (th < tAA) {#
+                BAF[i] <- 0#
+            }#
+            # 6.1: SNP is "correctly between" ref$AA_T_Mean and ref$AB_T_Mean#
+            else if (th <= tAB) {#
+                #interpolate as SNP is expected to be between ref$AB_T_Mean and ref$BB_T_Mean#
+                BAF[i] <- 0.5* (th - tAA) / (tAB - tAA)#
+            }#
+            # 2: Heterozygous SNP is subjected to deletion or UPD of allele A making it unexectedly to be #
+            # between ref$AB_T_Mean and ref$BB_T_Mean where it normally should not NOT BE.#
+            else {#
+                BAF[i] <- ifelse(th > med.tBB, 1, 0.5 + 0.5 * (th - tAB) / (med.tBB[i] - tAB))#
+            }#
+            if (th <= tAB) {#
+                eR <- rAA + ((th - tAA) * (rAB - rAA) / (tAB - tAA))#
+                LRR[i] <- ifelse(eR <= 0, NaN, log2(rr / eR))#
+            }#
+            else {#
+                LRR[i] <- NaN#
+            }#
+        }#
+        # 7: positive for AA & BB & AB, Illumina style calculation#
+        else if (e.tAA & e.tAB & e.tBB){#
+            if (th < tAB) {#
+                BAF[i] <- ifelse(th < tAA, 0, 0.5 * (th - tAA) / (tAB - tAA))#
+                eR <- rAA + ((th - tAA) * (rAB - rAA) / (tAB - tAA))#
+            }#
+            else {#
+                BAF[i] <- ifelse(th >= tBB, 1, 0.5 + 0.5 * (th - tAB) / (tBB - tAB))#
+                eR <- rAB + ((th - tAB) * (rBB - rAB) / (tBB - tAB))#
+            }#
+            LRR[i] <- ifelse(eR <= 0, NaN, log2(rr / eR))#
+        }#
+    }#
+    cbind(baf=.bound(BAF, 0, 1), lrr=LRR)#
+}
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+setwd("~/sci/Rpackages/clasp/")
+devtools::check()
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+i<-NaN
+devtools::check()
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+devtools::check()
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+log2(-1)
+devtools::check()
+metrics <- .tQN(intens, params$clusters, params$QN.thresholds)
+head(metrics)
+tab<-read.table("~/Desktop/data/cl/cl_MM_norm/MM7308.txt",sep="\t",header=T)
+head(tab)
+head(mm.markers)
+all(rownames(metrics) == mm.markers$id)
+m<-match(mm.markers$mm.id,tab$Name)
+any(is.na(m))
+tab<-tab[m,]
+head(metrics)
+head(tab)
+sum(abs(metrics$baf - tab$tQN.B.Allele.Frequency) > 0.01)
+sum(abs(metrics$baf - tab$tQN.B.Allele.Frequency) > 0.01, na.rm=T)
+sum(abs(metrics$baf - tab$tQN.B.Allele.Frequency) > 0.02, na.rm=T)
+sum(abs(metrics$baf - tab$tQN.B.Allele.Frequency) > 0.03, na.rm=T)
+sum(abs(metrics$baf - tab$tQN.B.Allele.Frequency) > 0.04, na.rm=T)
+sum(abs(metrics$lrr - tab$tQN.Log.R.Ratio) > 0.04, na.rm=T)
+sum(is.na(metrics$baf))
+sum(is.na(tab$tQN.B.Allele.Frequency))
+head(result$samples,13)
+calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(307))
+head(calls)
+head(metrics)
+if ("switched" %in% names(norm.params) && any(norm.params$switched)) {#
+        w <- as.character(calls$marker_id) %in% names(norm.params$switched)[norm.params$switched]#
+        A <- w & calls$call == 1#
+        B <- w & calls$call == 2#
+        calls[A, "call"] <- 2#
+        calls[B, "call"] <- 1#
+    }
+head(calls)
+head(metrics,20)
+head(calls,20)
+metrics.plot("307", 307, 1, metrics, mm.norm.params, db)
+metrics.plot
+getwd()
+devtools::check()
+metrics.plot
+met.plot <- function(name, sample.id, marker.set.id, metrics, norm.params, db, chromosomes=1:19,#
+        zoom=NULL, tick.interval=NULL, plot.baf=TRUE, plot.lrr=TRUE, lrr.ylim=c(-2,2),#
+        plot.trend=TRUE, density.band.window=100, density.band.frac=0.75, #
+        other.plots=NULL, other.data=NULL, ...) {#
+#
+    calls <- dbGetPreparedQuery(db, .wrap("select marker_id, chromosome as chrm, position_bp as pos, call from #
+        genotype join marker on genotype.marker_id = marker.id where genotype.sample_id = ?"),#
+        data.frame(sample.id))#
+    # HACK: see compute.metrics.Illumina for details.#
+    if ("switched" %in% names(norm.params) && any(norm.params$switched)) {#
+        w <- as.character(calls$marker_id) %in% names(norm.params$switched)[norm.params$switched]#
+        A <- w & calls$call == 1#
+        B <- w & calls$call == 2#
+        calls[A, "call"] <- 2#
+        calls[B, "call"] <- 1#
+    }#
+#
+    # Only plot SNPs on specified chromosomes#
+    if (!is.null(chromosomes)) {#
+        w <- !is.na(match(calls$chrm, chromosomes))#
+        calls <- calls[w,]#
+        metrics <- metrics[w,]#
+    }#
+    chromosomes <- unique(calls$chrm)#
+#
+    # Convert chromosome positions to absolute genomic positions#
+    chrms <- factor(calls$chrm, levels=chromosomes)#
+    chrm.sizes <- as.numeric(tapply(calls$pos, chrms, max))#
+    genome.size <- sum(chrm.sizes)#
+    names(chrm.sizes) <- chromosomes#
+    cs <- c(0, cumsum(as.numeric(chrm.sizes[-length(chrm.sizes)])))#
+    names(cs) <- chromosomes#
+    x <- cs[as.character(calls$chrm)] + calls$pos#
+#
+    xlim <- c(0, genome.size)#
+    if (length(chromosomes) == 1 && !is.null(zoom)) {#
+        xlim <- zoom#
+    }#
+#
+    nplots <- plot.baf + plot.lrr#
+    if (!is.null(other.plots)) {#
+        nplots <- nplots + length(other.plots)#
+    }#
+    if (nplots > 1) {#
+        par(mfrow=c(nplots, 1), mar=c(0.25,5,0.25,1), oma=c(3, 0, 3, 0))#
+    }#
+#
+    if (plot.baf) {#
+        .plot.baf(x, calls, metrics$baf, chrms, xlim=xlim, ...)#
+    }#
+#
+    if (plot.lrr) {#
+        .plot.scatter.with.trend.and.outliers(x, metrics$lrr, chrms, lrr.ylim, xlim=xlim,#
+            ylab="Log R Ratio", density.band.window, density.band.frac, plot.trend, ...)#
+    }#
+#
+    if (!is.null(other.plots)) {#
+        for (i in 1:length(other.plots)) {#
+            f <- other.plots[[i]]#
+            o <- other.data[[i]]#
+            f(calls, metrics, o, chromosomes=cs, xlim=xlim, ...)#
+        }#
+    }#
+#
+    if (is.null(tick.interval)) {#
+        tick.pos <- cs[1:length(chromosomes)]#
+        tick.name <- chromosomes#
+    }#
+    else {#
+        tick.pos <- NULL#
+        tick.name <- NULL#
+        for (i in 1:length(cs)) {#
+            ticks <- seq(1, chrm.sizes[i], tick.interval)#
+            tick.pos <- c(tick.pos, cs[i] + ticks)#
+            tick.name <- c(tick.name, chromosomes[i], ticks[2:length(ticks)] / 1000000)#
+        }#
+    }#
+#
+    if (!is.null(name)) {#
+        title(name, outer=TRUE)#
+    }#
+#
+    axis(1, tick.pos, tick.name)#
+}
+met.plot("307", 307, 1, metrics, mm.norm.params, db)
+warnings()
+?supsmu
+result$samples
+metrics <- .wave.correction(metrics, params$gcmodel)
+met.plot("307", 307, 1, metrics, mm.norm.params, db)

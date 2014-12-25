@@ -1,0 +1,24 @@
+Package: clasp
+Title: Cell Line Authentication by SNP Profiling
+Version: 0.1
+Authors: "John Didion <johndidion@gmail.com> [aut, cre]"
+Description: CLASP uses SNP array data to determine whether a
+    cell line matches its expected genetic background and predicts
+    whether it is contaminated and/or aneuploid. If you use this
+    software in a publication, please cite: Didion JP et al, 'SNP 
+    array profiling of mouse cell lines identifies their strains 
+    of origin and reveals cross-contamination and widespread 
+    aneuploidy,' BMC Genomics 2014, 15:847, doi:10.1186/1471-2164-15-847.
+Depends: R (>= 3.1.1)
+License: file LICENSE
+LazyData: true
+Suggests: knitr, rfigshare
+VignetteBuilder: knitr
+Imports: RSQLite,
+    tools,
+    bitops,
+    limma,
+    genoCN,
+    reshape2,
+    RColorBrewer,
+    Rmpfr
