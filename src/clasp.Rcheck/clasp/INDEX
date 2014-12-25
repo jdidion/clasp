@@ -1,0 +1,66 @@
+add.samples             Import sample data and add the samples to an
+                        existing sample set.
+compute.dilution.series
+                        Create a DilutionSeries object from a set of
+                        samples in the database.
+compute.metrics         Compute copy-number metrics.
+compute.metrics.Illumina
+                        Compute metrics using Illumina array data.
+connect.database        Open the SQLite database specified by 'dbfile'.
+copy.number.genoCN      Copy number analysis using the genoCN package.
+                        genoCN was designed for copy number analysis of
+                        human tumor genotypes. Therefore, it assumes
+                        that the default state is copy number 2 and all
+                        three genotypes possible (AA/AB/BB). This is
+                        state 1 in both the genoCNV and genoCNA HMM.
+                        For inbred strains, the default state should
+                        actually be one of homozygosity (state 2).
+copy.number.genoCN.plot
+                        Plot the BAF, LRR and copy number states of a
+                        sample.
+develop.assay           Develop a new assay.
+estimate.contamination
+                        Estimate contamination using platform-specific
+                        (i.e. intensity) information.
+estimate.copy.number    Estimate copy number for a set of cell lines.
+execute.assay           Execute an assay on a set of cell lines.
+get.all.arrays          Get information for all genotyping arrays in
+                        the database.
+get.all.genomes         Get information for all genome builds in the
+                        database.
+get.all.marker.sets     Get a list of all marker sets.
+get.all.samples         Get a list of all samples.
+get.array.id            Get array ID by name.
+get.assay               Fetch assay from the database.
+get.genome.id           Get genome ID by name.
+get.genotypes           Fetch genotype data for arbitrary sets of
+                        markers and samples.
+get.marker.set          Get a specific marker set.
+get.markers             Load the markers from a marker set or list of
+                        marker IDs.
+get.platform.data       Fetch platform-specific data.
+get.samples             Get a list of the samples in the set with the
+                        specified ID, or by a vector of sample IDs.
+import.array            Define a genotyping array in the database (if
+                        it doesn't already exist) and import the
+                        default marker set for that array for a given
+                        genome.
+import.genome           Define a genome build in the database.
+import.genotypes        Import genotype data.
+import.marker.set       Import marker data.
+import.sample.set       Create a sample set from a list of samples.
+import.samples          Import sample data.
+init.database           Initialize a new database with the default
+                        schema.
+insert.assay            Insert assay into database.
+intersect.marker.sets   Find the intersection of two or more marker
+                        sets.
+load.objects            Load an R object file and return a specific
+                        object (or a list of all objects if name == NA)
+                        without affecting the current environment.
+metrics.plot            Plot BAF and LRR values for a single sample.
+print.summary.CLASPAssay
+                        Generate a string representation of a
+                        summary.CLASPAssay object.
+rgb.alpha               Apply an alpha adjustment to a color
+summary.CLASPAssay      An S3 summary function for a CLASPAssay object.

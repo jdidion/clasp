@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>R: Cell Line Authentication by SNP Profiling</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="R.css">
+</head><body>
+<h1> Cell Line Authentication by SNP Profiling
+<img class="toplogo" src="../../../doc/html/logo.jpg" alt="[R logo]">
+</h1>
+<hr>
+<div align="center">
+<a href="../../../doc/html/packages.html"><img src="../../../doc/html/left.jpg" alt="[Up]" width="30" height="30" border="0"></a>
+<a href="../../../doc/html/index.html"><img src="../../../doc/html/up.jpg" alt="[Top]" width="30" height="30" border="0"></a>
+</div><h2>Documentation for package &lsquo;clasp&rsquo; version 0.1</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td width="25%"><a href="add.samples.html">add.samples</a></td>
+<td>Import sample data and add the samples to an existing sample set.</td></tr>
+<tr><td width="25%"><a href="compute.dilution.series.html">compute.dilution.series</a></td>
+<td>Create a DilutionSeries object from a set of samples in the database.</td></tr>
+<tr><td width="25%"><a href="compute.metrics.html">compute.metrics</a></td>
+<td>Compute copy-number metrics.</td></tr>
+<tr><td width="25%"><a href="compute.metrics.Illumina.html">compute.metrics.Illumina</a></td>
+<td>Compute metrics using Illumina array data.</td></tr>
+<tr><td width="25%"><a href="connect.database.html">connect.database</a></td>
+<td>Open the SQLite database specified by 'dbfile'.</td></tr>
+<tr><td width="25%"><a href="copy.number.genoCN.html">copy.number.genoCN</a></td>
+<td>Copy number analysis using the genoCN package. genoCN was designed for copy number analysis of human tumor genotypes. Therefore, it assumes that the default state is copy number 2 and all three genotypes possible (AA/AB/BB). This is state 1 in both the genoCNV and genoCNA HMM. For inbred strains, the default state should actually be one of homozygosity (state 2).</td></tr>
+<tr><td width="25%"><a href="copy.number.genoCN.plot.html">copy.number.genoCN.plot</a></td>
+<td>Plot the BAF, LRR and copy number states of a sample.</td></tr>
+<tr><td width="25%"><a href="develop.assay.html">develop.assay</a></td>
+<td>Develop a new assay.</td></tr>
+<tr><td width="25%"><a href="estimate.contamination.html">estimate.contamination</a></td>
+<td>Estimate contamination using platform-specific (i.e. intensity) information.</td></tr>
+<tr><td width="25%"><a href="estimate.copy.number.html">estimate.copy.number</a></td>
+<td>Estimate copy number for a set of cell lines.</td></tr>
+<tr><td width="25%"><a href="execute.assay.html">execute.assay</a></td>
+<td>Execute an assay on a set of cell lines.</td></tr>
+<tr><td width="25%"><a href="get.all.arrays.html">get.all.arrays</a></td>
+<td>Get information for all genotyping arrays in the database.</td></tr>
+<tr><td width="25%"><a href="get.all.genomes.html">get.all.genomes</a></td>
+<td>Get information for all genome builds in the database.</td></tr>
+<tr><td width="25%"><a href="get.all.marker.sets.html">get.all.marker.sets</a></td>
+<td>Get a list of all marker sets.</td></tr>
+<tr><td width="25%"><a href="get.all.samples.html">get.all.samples</a></td>
+<td>Get a list of all samples.</td></tr>
+<tr><td width="25%"><a href="get.array.id.html">get.array.id</a></td>
+<td>Get array ID by name.</td></tr>
+<tr><td width="25%"><a href="get.assay.html">get.assay</a></td>
+<td>Fetch assay from the database.</td></tr>
+<tr><td width="25%"><a href="get.genome.id.html">get.genome.id</a></td>
+<td>Get genome ID by name.</td></tr>
+<tr><td width="25%"><a href="get.genotypes.html">get.genotypes</a></td>
+<td>Fetch genotype data for arbitrary sets of markers and samples.</td></tr>
+<tr><td width="25%"><a href="get.marker.set.html">get.marker.set</a></td>
+<td>Get a specific marker set.</td></tr>
+<tr><td width="25%"><a href="get.markers.html">get.markers</a></td>
+<td>Load the markers from a marker set or list of marker IDs.</td></tr>
+<tr><td width="25%"><a href="get.platform.data.html">get.platform.data</a></td>
+<td>Fetch platform-specific data.</td></tr>
+<tr><td width="25%"><a href="get.samples.html">get.samples</a></td>
+<td>Get a list of the samples in the set with the specified ID, or by a vector of sample IDs.</td></tr>
+<tr><td width="25%"><a href="import.array.html">import.array</a></td>
+<td>Define a genotyping array in the database (if it doesn't already exist) and import the default marker set for that array for a given genome.</td></tr>
+<tr><td width="25%"><a href="import.genome.html">import.genome</a></td>
+<td>Define a genome build in the database.</td></tr>
+<tr><td width="25%"><a href="import.genotypes.html">import.genotypes</a></td>
+<td>Import genotype data.</td></tr>
+<tr><td width="25%"><a href="import.marker.set.html">import.marker.set</a></td>
+<td>Import marker data.</td></tr>
+<tr><td width="25%"><a href="import.sample.set.html">import.sample.set</a></td>
+<td>Create a sample set from a list of samples.</td></tr>
+<tr><td width="25%"><a href="import.samples.html">import.samples</a></td>
+<td>Import sample data.</td></tr>
+<tr><td width="25%"><a href="init.database.html">init.database</a></td>
+<td>Initialize a new database with the default schema.</td></tr>
+<tr><td width="25%"><a href="insert.assay.html">insert.assay</a></td>
+<td>Insert assay into database.</td></tr>
+<tr><td width="25%"><a href="intersect.marker.sets.html">intersect.marker.sets</a></td>
+<td>Find the intersection of two or more marker sets.</td></tr>
+<tr><td width="25%"><a href="load.objects.html">load.objects</a></td>
+<td>Load an R object file and return a specific object (or a list of all objects if name == NA) without affecting the current environment.</td></tr>
+<tr><td width="25%"><a href="metrics.plot.html">metrics.plot</a></td>
+<td>Plot BAF and LRR values for a single sample.</td></tr>
+<tr><td width="25%"><a href="print.summary.CLASPAssay.html">print.summary.CLASPAssay</a></td>
+<td>Generate a string representation of a summary.CLASPAssay object.</td></tr>
+<tr><td width="25%"><a href="rgb.alpha.html">rgb.alpha</a></td>
+<td>Apply an alpha adjustment to a color</td></tr>
+<tr><td width="25%"><a href="summary.CLASPAssay.html">summary.CLASPAssay</a></td>
+<td>An S3 summary function for a CLASPAssay object.</td></tr>
+</table>
+</body></html>
