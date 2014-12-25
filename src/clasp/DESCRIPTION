@@ -1,7 +1,7 @@
 Package: clasp
 Title: Cell Line Authentication by SNP Profiling
 Version: 0.1
-Authors: "John Didion <johndidion@gmail.com> [aut, cre]"
+Authors@R: person("John", "Didion", email="john.didion@nih.gov", role=c("aut", "cre"))
 Description: CLASP uses SNP array data to determine whether a
     cell line matches its expected genetic background and predicts
     whether it is contaminated and/or aneuploid. If you use this
@@ -14,6 +14,7 @@ Description: CLASP uses SNP array data to determine whether a
     https://github.com/jdidion/clasp.
 Depends: R (>= 3.1.1)
 License: file LICENSE
+URL: https://github.com/jdidion/clasp
 LazyData: true
 Suggests: knitr, rfigshare
 VignetteBuilder: knitr
