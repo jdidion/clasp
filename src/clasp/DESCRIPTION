@@ -9,6 +9,9 @@ Description: CLASP uses SNP array data to determine whether a
     array profiling of mouse cell lines identifies their strains 
     of origin and reveals cross-contamination and widespread 
     aneuploidy,' BMC Genomics 2014, 15:847, doi:10.1186/1471-2164-15-847.
+    A vignette showing how to use CLASP to reproduce the analyses in
+    this paper is available in the CLASP GitHub repository:
+    https://github.com/jdidion/clasp.
 Depends: R (>= 3.1.1)
 License: file LICENSE
 LazyData: true
