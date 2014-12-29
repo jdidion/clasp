@@ -13,11 +13,9 @@ Description: CLASP uses SNP array data to determine whether a
     this paper is available in the CLASP GitHub repository:
     https://github.com/jdidion/clasp.
 Depends: R (>= 3.1.1)
-License: file LICENSE
+License: CC BY-NC-SA 4.0
 URL: https://github.com/jdidion/clasp
 LazyData: true
-Suggests: knitr, rfigshare
-VignetteBuilder: knitr
 Imports: RSQLite,
     tools,
     bitops,
