@@ -11,7 +11,7 @@ Didion JP et al, 'SNP array profiling of mouse cell lines identifies their strai
 
 # Installation
 
-Download the source package (clasp\_0.1.tar.gz) and install (`install.packages("/path/to/clasp\_0.1.tar.gz", dependencies=TRUE)`).
+Download the source package (clasp\_0.1.tar.gz) and install (`install.packages("/path/to/clasp\_0.1.tar.gz", type="source", repos=NULL, dependencies=TRUE)`).
 
 # Usage
 
