@@ -11,11 +11,17 @@ Didion JP et al, 'SNP array profiling of mouse cell lines identifies their strai
 
 # Installation
 
-Installation requires the `devtools` package. Make sure not to build the vignette (set `build_vignettes=FALSE`, as shown below) unless you want to be waiting for a long time!
+Installation requires the `devtools` package and a couple of BioConductor packages. 
+
+Make sure not to build the vignette (set `build_vignettes=FALSE`, as shown below) unless you want to be waiting for a long time!
 
 ```r
+# allow BioConductor packages to be installed via install.packages
+setRepositories(1:2)
+# install devtools
 install.packages(‘devtools’)
 library(devtools)
+# install CLASP and dependencies
 devtools::install_github("jdidion/clasp/src/clasp", build_vignettes=FALSE)
 ```
 
