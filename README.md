@@ -11,7 +11,13 @@ Didion JP et al, 'SNP array profiling of mouse cell lines identifies their strai
 
 # Installation
 
-Download the source package (clasp\_0.1.tar.gz) and install (`install.packages("/path/to/clasp\_0.1.tar.gz", type="source", repos=NULL, dependencies=TRUE)`).
+Installation requires the `devtools` package. Make sure not to build the vignette (set `build_vignettes=FALSE`, as shown below) unless you want to be waiting for a long time!
+
+```r
+install.packages(‘devtools’)
+library(devtools)
+devtools::install_github("jdidion/clasp/src/clasp", build_vignettes=FALSE)
+```
 
 # Usage
 
